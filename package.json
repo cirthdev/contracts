@@ -1,0 +1,45 @@
+{
+  "name": "smart_inscription_contract",
+  "version": "0.1.10",
+  "description": "",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "fork-mainnet": "npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/RUG78UdjviviJyLRUEk-JS6hNDTHvK18",
+    "fork-goerli": "npx hardhat node --fork https://eth-goerli.g.alchemy.com/v2/_4taBH7VkHiU1P-I1oXrAlFYuVK9xoVC",
+    "merge-factory-contract": "sol-merger \"./contracts/SmartInscriptionFactory.sol\" merged-contracts",
+    "merge-uniswap-test": "sol-merger \"./contracts/UniswapV3Swap.sol\" merged-contracts",
+    "merge-swap-contract": "sol-merger \"./contracts/Swap.sol\" merged-contracts",
+    "merge-bridge-contract": "sol-merger \"./contracts/Ferc721Bridge.sol\" merged-contracts",
+    "merge-test-nft": "sol-merger \"./contracts/TestNFT.sol\" merged-contracts",
+    "deploy": "npx hardhat run deployer/deploy.js",
+    "deploy-goerli": "npx hardhat run deployer/deploy.js --network goerli"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
+    "@types/chai": "^4.2.0",
+    "@types/mocha": ">=9.1.0",
+    "@uniswap/hardhat-v3-deploy": "^0.1.1",
+    "ethers": "^6.9.1",
+    "hardhat": "^2.19.4",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-coverage": "^0.8.1",
+    "ts-node": ">=8.0.0",
+    "typechain": "^8.3.0",
+    "typescript": ">=4.5.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "4.9.0",
+    "@uniswap/v3-periphery": "^1.4.4",
+    "dotenv": "^16.3.1"
+  }
+}
