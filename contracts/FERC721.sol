@@ -55,15 +55,13 @@ contract FERC721 is IFERC721, ERC2981 {
         require(_tokenData.inscriptionId == 0, "initialized");
         require(msg.sender == factoryContract, "only factory caontract allowed");
         _setDefaultRoyalty(_deployer, _feeNumerator);
-        _tokenData = Data(
-            uint128(_max),
-            0,
-						_needFerc,
-            uint96(_inscriptionId),
-            uint56(_limit),
-            0,
-            _tick
-        );
+				_tokenData.max = uint128(_max);
+				_tokenData.totalSupply = 0;
+				_tokenData.needFerc = _needFerc;
+				_tokenData.inscriptionId = uint96(_inscriptionId);
+				_tokenData.limit = uint56(_limit);
+				_tokenData.ordinals = 0;
+				_tokenData.tick = _tick;
     }
 
     function supportsInterface(

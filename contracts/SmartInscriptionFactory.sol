@@ -59,7 +59,8 @@ contract SmartInscriptionFactory is Ownable {
 				totalInscriptions++;
 				_inscriptionAddress = Clones.clone(tokenImplementation);
         FERC721(_inscriptionAddress).initialize(_tick, _max, _limit, totalInscriptions, msg.sender, uint96(ROYALTY), _needFerc);
-				inscriptionData[_tick] = Data(uint96(totalInscriptions), _inscriptionAddress);
+				inscriptionData[_tick].inscriptionId = uint96(totalInscriptions);
+				inscriptionData[_tick].inscriptionAddress = _inscriptionAddress;
         emit Deploy(totalInscriptions, _tick, _max, _limit, _needFerc, _inscriptionAddress, globalId);
     }
 
