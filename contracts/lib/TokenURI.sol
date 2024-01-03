@@ -51,7 +51,7 @@ library TokenURI {
         parts[12] = '</text><text x="60" y="230" class="base">';
         parts[13] = string(abi.encodePacked('"id":', Strings.toString(tokenId)));
 				parts2[5] = string(abi.encodePacked('\\"id\\":', Strings.toString(tokenId)));
-        parts[14] = '</text><text x="40" y="280" class="base">';
+        parts[14] = '</text><text x="40" y="250" class="base">';
         parts[15] = '}';
         parts[16] = depositing ? string(abi.encodePacked('</text>', lockPath, '</svg>')) : '</text></svg>';
 

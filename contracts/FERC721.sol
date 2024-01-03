@@ -15,7 +15,7 @@ contract FERC721 is ERC2981, IFERC721 {
     address public immutable swapContract;
     address public immutable wethContract;
 
-    struct Data {
+    struct TokenData {
         uint64  max;
         uint64  totalSupply;
 				bool    needFerc;
@@ -24,7 +24,7 @@ contract FERC721 is ERC2981, IFERC721 {
         bytes9  tick;
     }
 
-    Data internal _tokenData;
+    TokenData internal _tokenData;
 
     mapping(address => uint256) internal _lastMintTimestamp; // record the last mint timestamp of account
     mapping(address => uint) internal _balanceOf;

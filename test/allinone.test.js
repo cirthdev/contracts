@@ -80,6 +80,7 @@ describe("Testing smart inscription factory", function () {
 		});
 		smartInscription721 = FERC721.attach(smartInscriptionAddress);
 		expect(await smartInscription721.symbol()).equal("testtest1");
+		expect(await smartInscription721.name()).equal("testtest1 {ferc-721}");
 		console.log('Deploy gas', receipt.gasUsed);
 	})
 
