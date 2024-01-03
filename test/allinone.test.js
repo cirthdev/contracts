@@ -121,8 +121,11 @@ describe("Testing smart inscription factory", function () {
 
 	// Note: this test must be on the testnet forked mumbai, run: yarn ganache-mumbai before testing, and change the rpc port to 8545.
 	it("get balance of ferc by accounts[0, 1, 2]", async () => {
-		await ferc20Contract.transfer(accounts[1], "100000000000000000000");
-		await ferc20Contract.transfer(accounts[2], "200000000000000000000");
+		const tx1 = await ferc20Contract.transfer(accounts[1], "100000000000000000000");
+		const tx2 = await ferc20Contract.transfer(accounts[2], "200000000000000000000");
+		await tx1.wait();
+		await tx2.wait();
+		// await sleep(waitMiniSeconds); // waiting for new block mined
 		const balance0 = await swapContract.balanceOfFerc(accounts[0]);
 		const balance1 = await swapContract.balanceOfFerc(accounts[1]);
 		const balance2 = await swapContract.balanceOfFerc(accounts[2]);
@@ -134,8 +137,8 @@ describe("Testing smart inscription factory", function () {
 
 	it("mint tokens of inscription #1 by accounts[0, 1, 2]", async () => {
 		// update mint fee to zero
-		// await smartInscriptionFactory.setMintFee(0);
-		await smartInscriptionFactory.setFreezeTime(0);
+		const tx = await smartInscriptionFactory.setFreezeTime(0); // ######
+		await tx.wait();
 		await mint(accounts[0]); // tokenId = 1
 		await mint(accounts[1]); // tokenId = 2
 		await mint(accounts[2]); // tokenId = 3
@@ -171,7 +174,8 @@ describe("Testing smart inscription factory", function () {
 	})
 
 	it("send #1 nft to account#1", async () => {
-		await smartInscription721.safeTransferFrom(accounts[0], accounts[1], 1);
+		const tx = await smartInscription721.safeTransferFrom(accounts[0], accounts[1], 1);
+		await tx.wait();
 		const balance = await smartInscription721.balanceOf(accounts[1].address);
 		expect(balance).equal(2n);
 	})
@@ -251,15 +255,18 @@ describe("Testing smart inscription factory", function () {
 	})
 
 	it("account#0 send 6000 erc20 to account#1, and accounts#1 withdraw 6000 erc20", async () => {
-		await erc20ContractOverBridge.transfer(accounts[1].address, "3000000000000000000000");
+		let tx = await erc20ContractOverBridge.transfer(accounts[1].address, "3000000000000000000000");
+		await tx.wait();
 		expect(await erc20ContractOverBridge.balanceOf(accounts[1].address)).equal(3000000000000000000000n);
 
 		let ferc721Blance = await smartInscription721.balanceOf(accounts[1].address);
 		expect(ferc721Blance).equal(2n);
 
 		const bridgeAddress = await bridgeContract.getAddress();
-		await erc20ContractOverBridge.connect(accounts[1]).approve(bridgeAddress, "3000000000000000000000");
-		await bridgeContract.connect(accounts[1]).withdraw(await erc20ContractOverBridge.getAddress(), "3000000000000000000000");
+		tx = await erc20ContractOverBridge.connect(accounts[1]).approve(bridgeAddress, "3000000000000000000000");
+		await tx.wait();
+		tx = await bridgeContract.connect(accounts[1]).withdraw(await erc20ContractOverBridge.getAddress(), "3000000000000000000000");
+		await tx.wait();
 
 		expect(await erc20ContractOverBridge.balanceOf(accounts[1].address)).equal(0n)
 
@@ -277,7 +284,9 @@ describe("Testing smart inscription factory", function () {
 		const newNft = await FakeFERC721.deploy(await swapContract.getAddress(), await wethContract.getAddress());
 		newNft.waitForDeployment();
 
-		await newNft.mint(accounts[0].address);
+		let tx = await newNft.mint(accounts[0].address);
+		await tx.wait();
+
 		let balance = await newNft.balanceOf(accounts[0].address);
 		expect(balance).equal(1n);
 		let owner = await newNft.ownerOf(1);
@@ -346,11 +355,14 @@ describe("Testing smart inscription factory", function () {
 	})
 
 	it("Test token#2 for max and limit are not divisible", async () => {
-		await inscription2.mint(accounts[0].address);
+		let tx = await inscription2.mint(accounts[0].address);
+		await tx.wait();
 		console.log(await inscription2.totalSupply());
-		await inscription2.mint(accounts[0].address);
+		tx = await inscription2.mint(accounts[0].address);
+		await tx.wait();
 		console.log(await inscription2.totalSupply());
-		await inscription2.mint(accounts[0].address);
+		tx = await inscription2.mint(accounts[0].address);
+		await tx.wait();
 		console.log(await inscription2.totalSupply());
 		// await inscription2.mint(accounts[0].address);
 	})
@@ -363,6 +375,9 @@ describe("Testing smart inscription factory", function () {
 		const balance1 = await smartInscription721.balanceOf(to.address);
 		expect(balance0 + 1n).equal(balance1);
 	}
+
+	const sleep = (seconds) => new Promise((res, rej) => setTimeout(res, seconds));
+
 });
 
 describe("Test uniswap on mainnet", () => {
