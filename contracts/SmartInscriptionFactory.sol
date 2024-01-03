@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./FERC721.sol";
 
 contract SmartInscriptionFactory is Ownable {
-		address public tokenImplementation;
+		address public immutable tokenImplementation;
     uint256 public totalInscriptions;
-		uint256 public globalId;
 		address public bridgeContractAddress;
 
-		uint256 internal MIN_TICK_LENGTH = 5;
-		uint256 internal MAX_TICK_LENGTH = 5;
+		uint256 internal MIN_TICK_LENGTH = 9;
+		uint256 internal MAX_TICK_LENGTH = 9;
 		uint256 internal MIN_FERC_HOLD = 10e18; // 10 Ferc
 		uint256 internal FREEZE_TIMESTAMP = 600;
 		uint256 internal ROYALTY = 200; // 2%
@@ -29,8 +28,7 @@ contract SmartInscriptionFactory is Ownable {
         uint256 max,
 				uint256 limit,
 				bool    needFerc,
-        address inscriptionAddress,
-				uint256 globalId
+        address inscriptionAddress
     );
 
 		event Mint(
@@ -38,9 +36,8 @@ contract SmartInscriptionFactory is Ownable {
 			string tick, 
 			uint256 max,
 			address inscriptionAddress,
-			uint256 tokenId,
-			uint256 totalSupply,
-			uint256 globalId
+			uint256 indexed tokenId,
+			uint256 totalSupply
 		);
     
 		constructor(
@@ -61,19 +58,16 @@ contract SmartInscriptionFactory is Ownable {
         FERC721(_inscriptionAddress).initialize(_tick, _max, _limit, totalInscriptions, msg.sender, uint96(ROYALTY), _needFerc);
 				inscriptionData[_tick].inscriptionId = uint96(totalInscriptions);
 				inscriptionData[_tick].inscriptionAddress = _inscriptionAddress;
-        emit Deploy(totalInscriptions, _tick, _max, _limit, _needFerc, _inscriptionAddress, globalId);
+        emit Deploy(totalInscriptions, _tick, _max, _limit, _needFerc, _inscriptionAddress);
     }
 
 		function minted(
 			string calldata tick,
 			uint   tokenId,
-			uint   max,
-			uint   totalSupply
-		) public returns(uint256) {
+			uint   max
+		) public {
 				require(msg.sender == inscriptionData[tick].inscriptionAddress, "must call from inscription");
-				globalId++;
-        emit Mint(inscriptionData[tick].inscriptionId, tick, max, inscriptionData[tick].inscriptionAddress, tokenId, totalSupply, globalId);
-				return globalId;
+        emit Mint(inscriptionData[tick].inscriptionId, tick, max, inscriptionData[tick].inscriptionAddress, tokenId, tokenId);
 		}
 
 		function withdraw(uint amount, address to) public onlyOwner returns(bool) {

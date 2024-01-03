@@ -4,27 +4,26 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ISmartInscriptionFactory.sol";
 import "./interfaces/ISwap.sol";
 import "./interfaces/IWETH9.sol";
 import "./lib/TokenURI.sol";
 import "./interfaces/IFERC721.sol";
 
-contract FERC721 is IFERC721, ERC2981 {
+contract FERC721 is ERC2981, IFERC721 {
     address public immutable factoryContract;
     address public immutable swapContract;
     address public immutable wethContract;
 
     struct Data {
-        uint128 max;
-        uint120 totalSupply;
+        uint64  max;
+        uint64  totalSupply;
 				bool    needFerc;
-        uint96  inscriptionId;
-        uint56  limit;
-        uint104 ordinals;
-        string  tick;
+        uint24  inscriptionId;
+        uint24  limit;
+        bytes9  tick;
     }
+
     Data internal _tokenData;
 
     mapping(address => uint256) internal _lastMintTimestamp; // record the last mint timestamp of account
@@ -55,13 +54,12 @@ contract FERC721 is IFERC721, ERC2981 {
         require(_tokenData.inscriptionId == 0, "initialized");
         require(msg.sender == factoryContract, "only factory caontract allowed");
         _setDefaultRoyalty(_deployer, _feeNumerator);
-				_tokenData.max = uint128(_max);
+				_tokenData.max = uint64(_max);
 				_tokenData.totalSupply = 0;
 				_tokenData.needFerc = _needFerc;
-				_tokenData.inscriptionId = uint96(_inscriptionId);
-				_tokenData.limit = uint56(_limit);
-				_tokenData.ordinals = 0;
-				_tokenData.tick = _tick;
+				_tokenData.inscriptionId = uint16(_inscriptionId);
+				_tokenData.limit = uint16(_limit);
+				_tokenData.tick = bytes9(bytes(_tick));
     }
 
     function supportsInterface(
@@ -80,7 +78,7 @@ contract FERC721 is IFERC721, ERC2981 {
     }
 
     function symbol() public view returns (string memory) {
-        return _tokenData.tick;
+        return string(abi.encodePacked(_tokenData.tick));
     }
 
     function max() public view returns (uint) {
@@ -94,11 +92,10 @@ contract FERC721 is IFERC721, ERC2981 {
     function tokenURI(uint tokenId) public view returns (string memory res) {
         if (tokenId <= totalSupply())
             res = TokenURI.uri(
-                _tokenData.tick,
+                string(abi.encodePacked(_tokenData.tick)),
                 tokenId,
                 _tokenData.max,
                 _tokenData.limit,
-                _tokenData.ordinals,
 								ownerOf(tokenId) == ISmartInscriptionFactory(factoryContract).bridgeContractAddress()
             );
     }
@@ -118,10 +115,6 @@ contract FERC721 is IFERC721, ERC2981 {
     function inscriptionId() public view returns (uint) {
         return _tokenData.inscriptionId;
     }
-
-		function ordinals() public view returns (uint) {
-			return _tokenData.ordinals;
-		}
 
     function isApprovedForAll(
         address owner,
@@ -260,14 +253,11 @@ contract FERC721 is IFERC721, ERC2981 {
         _ownerOf[_tokenData.totalSupply] = to;
         _lastMintTimestamp[msg.sender] = block.timestamp;
 				
-        _tokenData.ordinals = uint104(
-            ISmartInscriptionFactory(factoryContract).minted(
-                _tokenData.tick,
-                _tokenData.totalSupply,
-                _tokenData.max,
-                _tokenData.totalSupply
-            )
-        );
+				ISmartInscriptionFactory(factoryContract).minted(
+						string(abi.encodePacked(_tokenData.tick)),
+						_tokenData.totalSupply,
+						_tokenData.max
+				);
         emit Transfer(address(0), to, _tokenData.totalSupply);
     }
 

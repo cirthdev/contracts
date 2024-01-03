@@ -27,10 +27,9 @@ library TokenURI {
 			uint256 tokenId,
 			uint256 max,
 			uint256 limit,
-			uint256 ordinals,
 			bool    depositing
 		) public pure returns (string memory) {
-        string[19] memory parts;
+        string[17] memory parts;
 				string[7] memory parts2;
         parts[0] = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 350 350"><style>.base { fill: white; font-family: monospace; font-size: 18px; }</style><rect width="100%" height="100%" fill="#101010" /><text x="40" y="60" class="base">';
         parts[1] = "{";
@@ -50,19 +49,16 @@ library TokenURI {
         parts[11] = string(abi.encodePacked('"lim":', Strings.toString(limit), ','));//'"lim":1,';
 				parts2[4] = string(abi.encodePacked('\\"lim\\":', Strings.toString(limit), ',')); //'\\"lim\\":1,';
         parts[12] = '</text><text x="60" y="230" class="base">';
-        parts[13] = string(abi.encodePacked('"id":', Strings.toString(tokenId), ','));
-				parts2[5] = string(abi.encodePacked('\\"id\\":', Strings.toString(tokenId), ','));
-        parts[14] = '</text><text x="60" y="260" class="base">';
-        parts[15] = string(abi.encodePacked('"ord":', Strings.toString(ordinals)));
-				parts2[6] = string(abi.encodePacked('\\"ord\\":', Strings.toString(ordinals)));
-        parts[16] = '</text><text x="40" y="280" class="base">';
-        parts[17] = '}';
-        parts[18] = depositing ? string(abi.encodePacked('</text>', lockPath, '</svg>')) : '</text></svg>';
+        parts[13] = string(abi.encodePacked('"id":', Strings.toString(tokenId)));
+				parts2[5] = string(abi.encodePacked('\\"id\\":', Strings.toString(tokenId)));
+        parts[14] = '</text><text x="40" y="280" class="base">';
+        parts[15] = '}';
+        parts[16] = depositing ? string(abi.encodePacked('</text>', lockPath, '</svg>')) : '</text></svg>';
 
-				string memory description = string(abi.encodePacked(parts[1], parts2[0], parts2[1], parts2[2], parts2[3], parts2[4], parts2[5], parts2[6], parts[17]));
-				description = string(abi.encodePacked(description, "\\n\\nferc-721 is protocol for smart inscription, visit https://github.com/smart_inscription for more information"));
+				string memory description = string(abi.encodePacked(parts[1], parts2[0], parts2[1], parts2[2], parts2[3], parts2[4], parts2[5], parts[15]));
+				description = string(abi.encodePacked(description, "\\n\\nferc-721 is protocol for Cirth, visit https://docs.cirth.meme for more information"));
         string memory output = string(abi.encodePacked(parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8]));
-        output = string(abi.encodePacked(output, parts[9], parts[10], parts[11], parts[12], parts[13], parts[14], parts[15], parts[16], parts[17], parts[18]));
+        output = string(abi.encodePacked(output, parts[9], parts[10], parts[11], parts[12], parts[13], parts[14], parts[15], parts[16]));
         string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "#', Strings.toString(tokenId), '", "description": "', description, '", "image": "data:image/svg+xml;base64,', Base64.encode(bytes(output)), '"}'))));
         output = string(abi.encodePacked('data:application/json;base64,', json));
         return output;

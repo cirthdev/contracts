@@ -97,7 +97,7 @@ contract FakeFERC721 is IERC721, ERC2981 {
                 tokenId,
                 _tokenData.max,
                 _tokenData.limit,
-                _tokenData.ordinals,
+                // _tokenData.ordinals,
 								ownerOf(tokenId) == factoryContract.bridgeContractAddress()
             );
     }

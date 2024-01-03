@@ -13,6 +13,6 @@ interface IFERC721 is IERC721 {
 	function limit() external view returns(uint);
 	function needFerc() external view returns(bool);
 	function inscriptionId() external view returns(uint);
-	function ordinals() external view returns(uint);
+	// function ordinals() external view returns(uint);
 	function lastMintTimestamp(address addr) external view returns (uint);
 }

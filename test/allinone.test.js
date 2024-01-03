@@ -66,7 +66,7 @@ describe("Testing smart inscription factory", function () {
 
 	it("deploy 1st tokens", async () => {
 		const tx = await smartInscriptionFactory.deploy(
-			"test1",
+			"testtest1",
 			"30000",
 			"3000",
 			false,
@@ -79,13 +79,13 @@ describe("Testing smart inscription factory", function () {
 			}
 		});
 		smartInscription721 = FERC721.attach(smartInscriptionAddress);
-		expect(await smartInscription721.symbol()).equal("test1");
+		expect(await smartInscription721.symbol()).equal("testtest1");
 		console.log('Deploy gas', receipt.gasUsed);
 	})
 
 	it("deploy 2nd tokens", async () => {
 		const tx = await smartInscriptionFactory.deploy(
-			"test2",
+			"testtest2",
 			"1000",
 			"300",
 			false,
@@ -103,7 +103,7 @@ describe("Testing smart inscription factory", function () {
 
 	it("deploy 3rd tokens", async () => {
 		const tx = await smartInscriptionFactory.deploy(
-			"test3",
+			"testtest3",
 			"21000000",
 			"2000",
 			false,
