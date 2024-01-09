@@ -15,15 +15,6 @@ contract FERC721 is ERC2981, IFERC721 {
     address public immutable swapContract;
     address public immutable wethContract;
 
-    struct TokenData {
-        uint64  max;
-        uint64  totalSupply;
-				bool    needFerc;
-        uint24  inscriptionId;
-        uint24  limit;
-        bytes9  tick;
-    }
-
     TokenData internal _tokenData;
 
     mapping(address => uint256) internal _lastMintTimestamp; // record the last mint timestamp of account
@@ -59,7 +50,7 @@ contract FERC721 is ERC2981, IFERC721 {
 				_tokenData.needFerc = _needFerc;
 				_tokenData.inscriptionId = uint16(_inscriptionId);
 				_tokenData.limit = uint16(_limit);
-				_tokenData.tick = bytes9(bytes(_tick));
+				_tokenData.tick = bytes5(bytes(_tick));
     }
 
     function supportsInterface(
@@ -115,6 +106,10 @@ contract FERC721 is ERC2981, IFERC721 {
     function inscriptionId() public view returns (uint) {
         return _tokenData.inscriptionId;
     }
+
+		function tokenData() public view returns (TokenData memory) {
+				return _tokenData;
+		}
 
     function isApprovedForAll(
         address owner,

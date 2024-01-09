@@ -10,8 +10,8 @@ contract SmartInscriptionFactory is Ownable {
     uint256 public totalInscriptions;
 		address public bridgeContractAddress;
 
-		uint256 internal MIN_TICK_LENGTH = 9;
-		uint256 internal MAX_TICK_LENGTH = 9;
+		uint256 internal MIN_TICK_LENGTH = 5;
+		uint256 internal MAX_TICK_LENGTH = 5;
 		uint256 internal MIN_FERC_HOLD = 10e18; // 10 Ferc
 		uint256 internal FREEZE_TIMESTAMP = 600;
 		uint256 internal ROYALTY = 200; // 2%

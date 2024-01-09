@@ -7,11 +7,20 @@ import "./interfaces/IFERC721.sol";
 import "./interfaces/IFERC20.sol";
 import "./FERC20.sol";
 
+error NotCreatedByFactory();
+error MintNotFinished();
+error NotApprovedForAll();
+error NotCreatedByBridge();
+error AllowanceNotEnough();
+error BalanceNotEnough();
+error NotMultipleOfLimit();
+error WithdrawAmountIsZero();
+
 contract Ferc721Bridge {
 		address public immutable factoryContractAddress;
 		address public immutable tokenImplementation;
 
-		mapping(address => uint256[]) public nftTokenIds;
+		mapping(address => uint64[]) public nftTokenIds;
 		mapping(address => address) public ferc20Addresses; // ferc-721 => ferc-20 address
 		mapping(address => address) public ferc721Addresses;  // ferc-20 => ferc-721 address
 
@@ -26,16 +35,16 @@ contract Ferc721Bridge {
 
     function withdraw(address ferc20Address, uint256 amount) external returns (bool) {
 				IFERC20 ferc20 = IFERC20(ferc20Address);
-				require(ferc20.bridgeContract() == address(this), "token is not created by ferc bridge");
-				require(ferc20.allowance(msg.sender, address(this)) >= amount, "allowance is not enough");
-				require(ferc20.balanceOf(msg.sender) >= amount, "balance is not enough");
+				if(ferc20.bridgeContract() != address(this)) revert NotCreatedByBridge();
+				if(ferc20.allowance(msg.sender, address(this)) < amount) revert AllowanceNotEnough();
+				if(ferc20.balanceOf(msg.sender) < amount) revert BalanceNotEnough();
 
 				address ferc721Address = ferc721Addresses[ferc20Address];
 				IFERC721 ferc721 = IFERC721(ferc721Address);
-				uint256 limit = ferc721.limit();
-				require(amount / 1e18 % limit == 0, "amount should be a multiple of limit");
+				uint limit = ferc721.limit();
+				if(amount / 1e18 % limit != 0) revert NotMultipleOfLimit();
 				uint256 amountOfFERC721 = amount / limit / 1e18;
-				require(amountOfFERC721 > 0, "amount can not be zero");
+				if(amountOfFERC721 == 0) revert WithdrawAmountIsZero();
 
 				// return back to depositer
 				for(uint i; i < amountOfFERC721; i++) {
@@ -51,11 +60,12 @@ contract Ferc721Bridge {
         return true;
     }
 
-		function batchDeposit(address inscriptionAddress, uint[] memory ids) external {
+		function batchDeposit(address inscriptionAddress, uint[] calldata ids) external {
 			IFERC721 inscription = IFERC721(inscriptionAddress);
-			require(inscription.factoryContract() == factoryContractAddress, "not created by factory");
-			require(inscription.totalSupply() == inscription.max() / inscription.limit(), "mint not finished");
-			require(inscription.isApprovedForAll(msg.sender, address(this)), "not approved");
+			IFERC721.TokenData memory tokenData = inscription.tokenData();
+			if(inscription.factoryContract() != factoryContractAddress) revert NotCreatedByFactory();
+			if(tokenData.totalSupply < tokenData.max / tokenData.limit) revert MintNotFinished();
+			if(!inscription.isApprovedForAll(msg.sender, address(this))) revert NotApprovedForAll();
 
 			address ferc20Address = ferc20Addresses[inscriptionAddress];
 			if(ferc20Address == address(0x0)) {
@@ -63,20 +73,21 @@ contract Ferc721Bridge {
 				FERC20(ferc20Address).initialize(inscriptionAddress);
 				ferc721Addresses[ferc20Address] = inscriptionAddress;
 				ferc20Addresses[inscriptionAddress] = ferc20Address;
-				emit DeployERC20(msg.sender, msg.sender, inscriptionAddress, ferc20Address, inscription.limit());
+				emit DeployERC20(msg.sender, msg.sender, inscriptionAddress, ferc20Address, tokenData.limit);
 			}
 
-			for(uint i; i < ids.length; i++) {
-				nftTokenIds[inscriptionAddress].push(ids[i]);
+			uint len = ids.length;
+			for(uint i; i < len; i++) {
 				inscription.transferFrom(msg.sender, address(this), ids[i]);
-				emit ReceivedNFT(msg.sender, msg.sender, ids[i], inscriptionAddress, ferc20Address, inscription.limit());
+				nftTokenIds[inscriptionAddress].push(uint64(ids[i]));
+				emit ReceivedNFT(msg.sender, msg.sender, ids[i], inscriptionAddress, ferc20Address, tokenData.limit);
 			}
-			FERC20(ferc20Address).mint(msg.sender, inscription.limit() * 1e18 * ids.length);
+			FERC20(ferc20Address).mint(msg.sender, uint(tokenData.limit) * 1e18 * ids.length);
 		}
 		
 		function onERC721Received(address operator, address from, uint256 tokenId, bytes calldata data) external returns (bytes4) {
-				require(IFERC721(msg.sender).factoryContract() == factoryContractAddress, "not created by factory");
-				require(IFERC721(msg.sender).totalSupply() == IFERC721(msg.sender).max() / IFERC721(msg.sender).limit(), "mint not finished");
+				if(IFERC721(msg.sender).factoryContract() != factoryContractAddress) revert NotCreatedByFactory();
+				if(IFERC721(msg.sender).totalSupply() < IFERC721(msg.sender).max() / IFERC721(msg.sender).limit()) revert MintNotFinished();
 
 				address ferc20Address = ferc20Addresses[msg.sender];
 				if(ferc20Address == address(0x0)) {
@@ -86,7 +97,7 @@ contract Ferc721Bridge {
 					ferc20Addresses[msg.sender] = ferc20Address;
 					emit DeployERC20(operator, from, msg.sender, ferc20Address, IFERC721(msg.sender).limit());
 				}
-				nftTokenIds[msg.sender].push(tokenId);
+				nftTokenIds[msg.sender].push(uint64(tokenId));
 
 				FERC20(ferc20Address).mint(from, IFERC721(msg.sender).limit() * 1e18);
 

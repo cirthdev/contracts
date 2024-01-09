@@ -66,7 +66,7 @@ describe("Testing smart inscription factory", function () {
 
 	it("deploy 1st tokens", async () => {
 		const tx = await smartInscriptionFactory.deploy(
-			"testtest1",
+			"test1",
 			"30000",
 			"3000",
 			false,
@@ -79,14 +79,15 @@ describe("Testing smart inscription factory", function () {
 			}
 		});
 		smartInscription721 = FERC721.attach(smartInscriptionAddress);
-		expect(await smartInscription721.symbol()).equal("testtest1");
-		expect(await smartInscription721.name()).equal("testtest1 {ferc-721}");
+		expect(await smartInscription721.symbol()).equal("test1");
+		expect(await smartInscription721.name()).equal("test1 {ferc-721}");
 		console.log('Deploy gas', receipt.gasUsed);
+		console.log('Address: ', smartInscriptionAddress)
 	})
 
 	it("deploy 2nd tokens", async () => {
 		const tx = await smartInscriptionFactory.deploy(
-			"testtest2",
+			"test2",
 			"1000",
 			"300",
 			false,
@@ -100,17 +101,20 @@ describe("Testing smart inscription factory", function () {
 		});
 		inscription2 = FERC721.attach(inscription2Address);
 		console.log('Deploy gas', receipt.gasUsed);
+		console.log('Address: ', inscription2Address)
 	})
 
 	it("deploy 3rd tokens", async () => {
 		const tx = await smartInscriptionFactory.deploy(
-			"testtest3",
+			"test3",
 			"21000000",
 			"2000",
 			false,
 		);
 		const receipt = await tx.wait();
+		const inscription3Address = receipt.logs[0].args[5];
 		console.log('Deploy gas', receipt.gasUsed);
+		console.log('Address: ', inscription3Address)
 	})
 
 	it("get total inscriptions", async () => {
@@ -327,7 +331,8 @@ describe("Testing smart inscription factory", function () {
 
 		const approveTx = await smartInscription721.setApprovalForAll(await bridgeContract.getAddress(), true);
 		const depositTx = await bridgeContract.batchDeposit(await smartInscription721.getAddress(), ownedTokenIds);
-		const totalGas = (await approveTx.wait()).gasUsed + (await depositTx.wait()).gasUsed;
+		// const totalGas = (await approveTx.wait()).gasUsed + (await depositTx.wait()).gasUsed;
+		const totalGas = (await depositTx.wait()).gasUsed;
 
 		balance = await smartInscription721.balanceOf(accounts[0].address);
 		console.log("after => ferc721 balance of account#0:", balance)
